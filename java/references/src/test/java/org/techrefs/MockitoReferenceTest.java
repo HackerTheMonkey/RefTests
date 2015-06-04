@@ -165,8 +165,8 @@ public class MockitoReferenceTest {
     public void stubbing_void_methods(){
         LinkedList<String> linkedList = mock(LinkedList.class);
         /**
-         * The doX family of methods can potentially in all stubbing
-         * caeses. It sounds more expressive as well.
+         * The doX() family of methods can potentially be used in all stubbing
+         * cases. It sounds more expressive as well.
          *
          * Here are a few usage examples with not only void methods.
          */
@@ -364,6 +364,72 @@ public class MockitoReferenceTest {
         });
 
         assertThat(mockList.get(0), is(equalTo("Bar")));
+    }
+
+    @Test
+    public void we_can_also_do_partial_mocking_using_spys_non_stubbed_calls_will_invoke_real_methods() {
+
+        /**
+         * Partial mocks can be used as a refactoring technique as a replacement
+         * for the subclass-and-override when dealing with legacy code.
+         *
+         * Reference: http://monkeyisland.pl/2009/01/13/subclass-and-override-vs-partial-mocking-vs-refactoring/
+         */
+
+        ArrayList<String> arrayList = new ArrayList<String>();
+        ArrayList<String> arrayListSpy = spy(arrayList);
+
+        /**
+         * Let's do some stubbing. This is why spying is termed also as
+         * partial mocking as it allows you to mock certain parts of an "object"
+         * but not others.
+         */
+        when(arrayListSpy.size()).thenReturn(100);
+
+        /**
+         * Invoking non-stubbed methods would result in calling the real methods
+         * on the object being spyed on.
+         */
+        arrayListSpy.add("one");
+        arrayListSpy.add("two");
+
+        assertThat(arrayListSpy.get(0), is(equalTo("one")));
+        assertThat(arrayListSpy.get(1), is(equalTo("two")));
+
+        /**
+         * Calling a stubbed method works as expected.
+         */
+        assertThat(arrayListSpy.size(), is(equalTo(100)));
+
+        /**
+         * The interesting thing is that we can verify both
+         * stubbed and real method invocations.
+         */
+        verify(arrayListSpy).size();
+        verify(arrayListSpy, times(2)).add(anyString());
+        verify(arrayListSpy, times(2)).get(anyInt());
+    }
+
+    @Test
+    public void sometimes_we_have_to_use_doX_family_of_methods_when_stubbing_spies() {
+        ArrayList<String> arrayList = new ArrayList<String>();
+        ArrayList<String> spy = spy(arrayList);
+
+        /**
+         * As the non-stubbed methods calls would result in invoking the real method
+         * on the object being spyed on, then the following call will throw an
+         * IndexOutOfBoundsException as the arrayList has no elements as this point
+         * in time.
+         */
+        //when(spy.get(0)).thenReturn("one");
+
+        /**
+         * Instead, and in order to stub methods against spys we have to use the
+         * doX() family of methods, such as:
+         */
+        doReturn("one").when(spy).get(0);
+
+        assertThat(spy.get(0), is(equalTo("one")));
     }
 
     private Matcher<String> isValid() {
