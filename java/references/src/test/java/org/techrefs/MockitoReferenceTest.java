@@ -418,7 +418,7 @@ public class MockitoReferenceTest {
         /**
          * As the non-stubbed methods calls would result in invoking the real method
          * on the object being spyed on, then the following call will throw an
-         * IndexOutOfBoundsException as the arrayList has no elements as this point
+         * IndexOutOfBoundsException as the arrayList has no elements at this point
          * in time.
          */
         //when(spy.get(0)).thenReturn("one");
@@ -430,6 +430,59 @@ public class MockitoReferenceTest {
         doReturn("one").when(spy).get(0);
 
         assertThat(spy.get(0), is(equalTo("one")));
+    }
+
+    @Test
+    public void when_spying_mockito_creates_a_copy_of_the_instance_being_spied_on() {
+        ArrayList<String> arrayList = new ArrayList<String>();
+        ArrayList<String> spy = spy(arrayList);
+
+        /**
+         * Let's change the state of the real instance by interacting
+         * directly with it.
+         */
+        arrayList.add("one");
+
+        /**
+         * As mockito creates a new copy (i.e. clone) the real instance when
+         * we create the spy, then any interaction with non-stubbed method would
+         * result in calling methods on the clone of the real instance rather than
+         * the original instance being spied on. Conclusion is, interacting with non-stubbed
+         * methods will not change the state of the real original instance but rather it will
+         * change the state of the cloned instance.
+         */
+        spy.add("one");
+        spy.remove(0);
+
+        assertThat(arrayList.get(0), is(notNullValue()));
+    }
+
+    @Test
+    public void we_cant_stub_final_methods_on_a_spy_the_stubbing_will_have_no_effect() {
+
+
+        AClassWithFinalMethod aClassWithFinalMethod = new AClassWithFinalMethod();
+        AClassWithFinalMethod spy = spy(aClassWithFinalMethod);
+
+        /**
+         * Notice that Mockito keeps quite about this and it will simply call
+         * the real methods the next time we interact with the spy ignoring the fact
+         * that we have explicitly stubbed that method.
+         */
+        doReturn("Bar").when(spy).testMethod();
+
+        assertThat(spy.testMethod(), is(equalTo("Foo")));
+
+        /**
+         * We can't even verify final methods on a spy, big time.
+         */
+//        verify(spy, times(1)).testMethod();
+    }
+
+    private static class AClassWithFinalMethod{
+        public final String testMethod() {
+            return "Foo";
+        }
     }
 
     private Matcher<String> isValid() {
