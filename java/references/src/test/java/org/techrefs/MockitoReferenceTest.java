@@ -469,7 +469,17 @@ public class MockitoReferenceTest {
          * the real methods the next time we interact with the spy ignoring the fact
          * that we have explicitly stubbed that method.
          */
-        doReturn("Bar").when(spy).testMethod();
+
+        /**
+         * On a different note, simply attempting to stub a final method on
+         * a spy object seems to mess up the state of completely unrelated
+         * tests.
+         *
+         * Try uncommenting the below line and re-run all the tests in this
+         * class and see if they are passing. The strange thing is, this unit test
+         * passes on its own, but not when you run it alongside other tests.
+         */
+//        doReturn("Bar").when(spy).testMethod();
 
         assertThat(spy.testMethod(), is(equalTo("Foo")));
 
