@@ -6,6 +6,7 @@ import org.hamcrest.MatcherAssert;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
 import org.mockito.InOrder;
+import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -18,6 +19,7 @@ import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.text.IsEmptyString.*;
 import static org.mockito.Mockito.*;
 
 public class MockitoReferenceTest {
@@ -45,7 +47,7 @@ public class MockitoReferenceTest {
     }
 
     @Test(expected = RuntimeException.class)
-    public void lets_do_some_basic_stubbing(){
+    public void lets_do_some_basic_stubbing() {
         /**
          * Create the mocked object
          */
@@ -76,7 +78,7 @@ public class MockitoReferenceTest {
     }
 
     @Test
-    public void last_stubbing_always_win(){
+    public void last_stubbing_always_win() {
         /**
          * With literal argument values
          */
@@ -95,7 +97,7 @@ public class MockitoReferenceTest {
         when(map.get(anyString())).thenReturn("Bar");
         when(map.get(anyString())).thenReturn("I don't know it!");
 
-        assertThat((String)map.get("Foo"), is(not(equalTo("Bar"))));
+        assertThat((String) map.get("Foo"), is(not(equalTo("Bar"))));
 
         /**
          * even when mixing argument matchers and literal Strings
@@ -110,7 +112,7 @@ public class MockitoReferenceTest {
 
 
     @Test
-    public void stubbing_using_mockito_builtin_agrument_matchers_sameAppliesOnVerification(){
+    public void stubbing_using_mockito_builtin_agrument_matchers_sameAppliesOnVerification() {
         /**
          * The built-in argument matchers are in the form of anyX()
          */
@@ -122,7 +124,7 @@ public class MockitoReferenceTest {
     }
 
     @Test
-    public void stubbing_using_natural_equals_java_style_thePreferredWay_sameAppliesOnVerification(){
+    public void stubbing_using_natural_equals_java_style_thePreferredWay_sameAppliesOnVerification() {
         List list = mock(List.class);
 
         when(list.contains("something")).thenReturn(true);
@@ -131,7 +133,7 @@ public class MockitoReferenceTest {
     }
 
     @Test
-    public void stubbing_using_custom_hamcrest_matchers_sameAppliesOnVerification(){
+    public void stubbing_using_custom_hamcrest_matchers_sameAppliesOnVerification() {
         List list = mock(List.class);
 
         when(list.contains(argThat(isValid()))).thenReturn(true);
@@ -141,7 +143,7 @@ public class MockitoReferenceTest {
     }
 
     @Test
-    public void when_using_argument_matchers_then_all_arguments_have_to_be_matchers_weather_stubbing_or_mocking(){
+    public void when_using_argument_matchers_then_all_arguments_have_to_be_matchers_weather_stubbing_or_mocking() {
         MultipleArgumentMatchersExample mock = mock(MultipleArgumentMatchersExample.class);
 
         when(mock.someMethodWithMultipleArguments(anyInt(), anyInt(), anyBoolean(), anyString())).thenReturn("Yo");
@@ -162,7 +164,7 @@ public class MockitoReferenceTest {
      * of methods. This is all because we need to satisfy the Java compiler.
      */
     @Test(expected = RuntimeException.class)
-    public void stubbing_void_methods(){
+    public void stubbing_void_methods() {
         LinkedList<String> linkedList = mock(LinkedList.class);
         /**
          * The doX() family of methods can potentially be used in all stubbing
@@ -199,7 +201,7 @@ public class MockitoReferenceTest {
     }
 
     @Test
-    public void in_order_verification_for_calls_on_a_single_mock_object(){
+    public void in_order_verification_for_calls_on_a_single_mock_object() {
         LinkedList linkedList = mock(LinkedList.class);
 
         linkedList.add("Add this first");
@@ -226,7 +228,7 @@ public class MockitoReferenceTest {
     }
 
     @Test
-    public void lets_do_inOrder_verification_on_multiple_mocks(){
+    public void lets_do_inOrder_verification_on_multiple_mocks() {
         List firstList = mock(List.class);
         List secondList = mock(List.class);
 
@@ -250,7 +252,7 @@ public class MockitoReferenceTest {
     }
 
     @Test
-    public void we_can_also_make_sure_that_calls_never_happened_on_mocks(){
+    public void we_can_also_make_sure_that_calls_never_happened_on_mocks() {
         List mock1 = mock(List.class);
         List mock2 = mock(List.class);
         List mock3 = mock(List.class);
@@ -275,7 +277,7 @@ public class MockitoReferenceTest {
     }
 
     @Test
-    public void there_is_a_way_to_find_out_if_there_is_any_redundant_mock_invocations_that_we_didnt_know_we_were_making(){
+    public void there_is_a_way_to_find_out_if_there_is_any_redundant_mock_invocations_that_we_didnt_know_we_were_making() {
         List mock01 = mock(List.class);
         List mock02 = mock(List.class);
 
@@ -305,7 +307,7 @@ public class MockitoReferenceTest {
     }
 
     @Test(expected = RuntimeException.class)
-    public void we_can_stub_multiple_method_calls_as_well(){
+    public void we_can_stub_multiple_method_calls_as_well() {
         List<String> firstList = mock(List.class);
         List<Long> secondList = mock(List.class);
 
@@ -328,7 +330,7 @@ public class MockitoReferenceTest {
     }
 
     @Test
-    public void dynammic_stubbing_this_is_an_advanced_but_less_recommended_way_of_stubbing_with_call_backs(){
+    public void dynammic_stubbing_this_is_an_advanced_but_less_recommended_way_of_stubbing_with_call_backs() {
         List<String> mockList = mock(ArrayList.class);
 
         when(mockList.get(1)).thenReturn("Foo");
@@ -340,7 +342,8 @@ public class MockitoReferenceTest {
                  * We can have access to the arguments that the stubbed method has
                  * been called with.
                  */
-                System.out.println("Arguments: " + Arrays.asList(invocationOnMock.getArguments()));;
+                System.out.println("Arguments: " + Arrays.asList(invocationOnMock.getArguments()));
+                ;
 
                 /**
                  * We can also invoke the real method rather than the mock version of it.
@@ -354,7 +357,7 @@ public class MockitoReferenceTest {
                  * We can even retrieve an instance of the mock object and call a totally
                  * different stubbed methods on it.
                  */
-                System.out.println("Calling another stubbed method: " + ((List<String>)invocationOnMock.getMock()).get(1));
+                System.out.println("Calling another stubbed method: " + ((List<String>) invocationOnMock.getMock()).get(1));
 
                 /**
                  * We can return whatever we want.
@@ -489,7 +492,56 @@ public class MockitoReferenceTest {
 //        verify(spy, times(1)).testMethod();
     }
 
-    private static class AClassWithFinalMethod{
+    @Test
+    public void we_can_change_the_default_return_type_of_non_stubbed_methods_by_using_SmartNulls_Strategy(){
+        /**
+         * In traditional mocks, for any non-primitive return type of an unstubbed method a null will
+         * be returned instead. We can change the default return type by altering the default strategy
+         * that Mockito operates with.
+         *
+         * NOTE: The SMART NULLs strategy will be the default strategy in the upcoming version
+         * of Mockito, e.g. Mockito 2.0
+         */
+        List mockThatReturnsSmartNulls = mock(List.class, Mockito.RETURNS_SMART_NULLS);
+        List traditionalMockThatReturnsNulls = mock(List.class);
+
+        assertThat(mockThatReturnsSmartNulls.get(0), is(notNullValue()));
+        assertThat(traditionalMockThatReturnsNulls.get(0), is(nullValue()));
+    }
+
+    @Test
+    public void we_can_also_override_the_default_unstubbed_methods_return_values_with_our_custom_implementation(){
+        List<String> aTraditionalMock = mock(List.class);
+
+        List<String> aMockThatReturnsCustomizedDefaultValue = mock(List.class, new Answer() {
+            @Override
+            public String answer(InvocationOnMock invocation) throws Throwable {
+                return "";
+            }
+        });
+
+        /**
+         * Interesting gotcha, stubbing a method on a mock that have a customized
+         * return values could potentially fail if we haven't taken that method
+         * return type into consideration.
+         *
+         * E.g uncommenting the following method call would fail as the unstubbed
+         * version of the method will be called first and it will return a String
+         * as per our return-value customization, hence we end up with a ClassCastException.
+         *
+         * Solution to this is to stub with the dox() family of methods instead of
+         * the traditional stubbing style.
+         */
+        //when(aMockThatReturnsCustomizedDefaultValue.size()).thenReturn(100);
+        doReturn(100).when(aMockThatReturnsCustomizedDefaultValue).size();
+
+        assertThat(aTraditionalMock.size(), is(equalTo(0)));
+        assertThat(aMockThatReturnsCustomizedDefaultValue.size(), is(equalTo(100)));
+
+        assertThat(aMockThatReturnsCustomizedDefaultValue.get(0), is(isEmptyString()));
+    }
+
+    private static class AClassWithFinalMethod {
         public final String testMethod() {
             return "Foo";
         }
@@ -509,8 +561,8 @@ public class MockitoReferenceTest {
         };
     }
 
-    private static class MultipleArgumentMatchersExample{
-        public String someMethodWithMultipleArguments(int x, int y, boolean isIt, String name){
+    private static class MultipleArgumentMatchersExample {
+        public String someMethodWithMultipleArguments(int x, int y, boolean isIt, String name) {
             return null;
         }
 
