@@ -1,10 +1,13 @@
 package org.techrefs;
 
+import lombok.Builder;
+import lombok.Data;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -19,7 +22,8 @@ import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.text.IsEmptyString.*;
+import static org.hamcrest.text.IsEmptyString.isEmptyString;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class MockitoReferenceTest {
@@ -493,7 +497,7 @@ public class MockitoReferenceTest {
     }
 
     @Test
-    public void we_can_change_the_default_return_type_of_non_stubbed_methods_by_using_SmartNulls_Strategy(){
+    public void we_can_change_the_default_return_type_of_non_stubbed_methods_by_using_SmartNulls_Strategy() {
         /**
          * In traditional mocks, for any non-primitive return type of an unstubbed method a null will
          * be returned instead. We can change the default return type by altering the default strategy
@@ -510,7 +514,7 @@ public class MockitoReferenceTest {
     }
 
     @Test
-    public void we_can_also_override_the_default_unstubbed_methods_return_values_with_our_custom_implementation(){
+    public void we_can_also_override_the_default_unstubbed_methods_return_values_with_our_custom_implementation() {
         List<String> aTraditionalMock = mock(List.class);
 
         List<String> aMockThatReturnsCustomizedDefaultValue = mock(List.class, new Answer() {
@@ -541,6 +545,59 @@ public class MockitoReferenceTest {
         assertThat(aMockThatReturnsCustomizedDefaultValue.get(0), is(isEmptyString()));
     }
 
+    @Test
+    public void we_can_verify_mock_methods_invocations_with_certain_arguments_via_an_ArgumentCaptor() {
+
+        /**
+         * Create an ArgumentCaptor that would potentially capture arguments passed to mocks
+         * that are of the type Person
+         */
+        ArgumentCaptor<Person> personArgumentCaptor = ArgumentCaptor.forClass(Person.class);
+        PersonProcessor personProcessor = mock(PersonProcessor.class);
+
+        Person person = Person.builder().name("Foo").build();
+        personProcessor.processPerson(person);
+
+        /**
+         * Let's verify that the processPerson() method has been invoked
+         * on the mock. Then capture the argument that the method has been
+         * called with for further verification
+         */
+        verify(personProcessor).processPerson(personArgumentCaptor.capture());
+        /**
+         * Now we have the actual argument that the mocked method has been called
+         * with, then we can do a little bit of further assertion on it.
+         */
+        assertThat(personArgumentCaptor.getValue().getName(), is(equalTo("Foo")));
+
+        /**
+         * This style is different than the verfication of mocks invocations
+         * using argument matchers in that the argument verification happens
+         * after the mocked operation verification while it happens at the same
+         * time when we use argument matchers/equals e.g.
+         */
+         verify(personProcessor, times(1)).processPerson(person);
+         verify(personProcessor, times(1)).processPerson(any(Person.class));
+
+
+    }
+
+    private static class PersonProcessor{
+        public boolean processPerson(Person person){
+            if(person.getName().equals("hasanein")){
+                return true;
+            }
+            return false;
+        }
+    }
+
+    @Data
+    @Builder
+    private static class Person{
+         private String name;
+         private int age;
+    }
+
     private static class AClassWithFinalMethod {
         public final String testMethod() {
             return "Foo";
@@ -567,4 +624,5 @@ public class MockitoReferenceTest {
         }
 
     }
+
 }
