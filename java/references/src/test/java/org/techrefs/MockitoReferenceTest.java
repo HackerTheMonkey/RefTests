@@ -496,6 +496,32 @@ public class MockitoReferenceTest {
 //        verify(spy, times(1)).testMethod();
     }
 
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void partial_mocking_can_be_selectively_enabled_on_mocks_without_the_need_to_use_spies(){
+
+        /**
+         * Create a mock in the usual way we do
+         */
+        List<String> mockList = mock(ArrayList.class);
+
+        /**
+         * then stub some method call
+         */
+        when(mockList.size()).thenReturn(10);
+        /**
+         * Imagine that we need to enable partial mocking to
+         * call some real method on our mocked object, then we
+         * can do that without the need to use a spy.
+         */
+        when(mockList.get(0)).thenCallRealMethod();
+
+        /**
+         * Do the needed invocations.
+         */
+        assertThat(mockList.size(), is(10));
+        mockList.get(0);
+    }
+
     @Test
     public void we_can_change_the_default_return_type_of_non_stubbed_methods_by_using_SmartNulls_Strategy() {
         /**
@@ -576,15 +602,45 @@ public class MockitoReferenceTest {
          * after the mocked operation verification while it happens at the same
          * time when we use argument matchers/equals e.g.
          */
-         verify(personProcessor, times(1)).processPerson(person);
-         verify(personProcessor, times(1)).processPerson(any(Person.class));
+        verify(personProcessor, times(1)).processPerson(person);
+        verify(personProcessor, times(1)).processPerson(any(Person.class));
+    }
 
+    @Test
+    public void we_can_also_do_some_stubbing_with_an_argument_captor(){
+        /**
+         * Create an ArgumentCaptor of for the Person class
+         */
+        ArgumentCaptor<Person> personArgumentCaptor = ArgumentCaptor.forClass(Person.class);
+
+        /**
+         * Stub the mock PersonProcessor passing in an ArgumentCaptor so we can later verify
+         * on what have been passed to invoke the stubbed method.
+         *
+         * Note: According to Mockito documentation, custom argument matchers are better suited
+         * when stubbing than using Argument Captors.
+         */
+        PersonProcessor personProcessor = mock(PersonProcessor.class);
+        when(personProcessor.processPerson(personArgumentCaptor.capture())).thenReturn(true);
+
+        /**
+         * Invoke our stubbed method
+         */
+        personProcessor.processPerson(Person.builder().name("hasanein").age(28).build());
+
+        /**
+         * Now we can use the ArgumentCaptor to assert on the values that our stubbed
+         * method has been invoked with.
+         */
+        assertThat(personArgumentCaptor.getValue().getName(), is(equalTo("hasanein")));
+        assertThat(personArgumentCaptor.getValue().getAge(), is(equalTo(28)));
 
     }
 
-    private static class PersonProcessor{
-        public boolean processPerson(Person person){
-            if(person.getName().equals("hasanein")){
+
+    private static class PersonProcessor {
+        public boolean processPerson(Person person) {
+            if (person.getName().equals("hasanein")) {
                 return true;
             }
             return false;
@@ -593,9 +649,9 @@ public class MockitoReferenceTest {
 
     @Data
     @Builder
-    private static class Person{
-         private String name;
-         private int age;
+    private static class Person {
+        private String name;
+        private int age;
     }
 
     private static class AClassWithFinalMethod {
