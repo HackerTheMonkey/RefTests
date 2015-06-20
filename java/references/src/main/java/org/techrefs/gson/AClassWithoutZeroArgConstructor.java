@@ -1,4 +1,4 @@
-package org.techrefs;
+package org.techrefs.gson;
 
 import lombok.Data;
 

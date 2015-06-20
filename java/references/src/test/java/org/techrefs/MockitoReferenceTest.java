@@ -637,6 +637,10 @@ public class MockitoReferenceTest {
 
     }
 
+    /**
+     * http://site.mockito.org/mockito/docs/current/org/mockito/Mockito.html#15
+     */
+
 
     private static class PersonProcessor {
         public boolean processPerson(Person person) {

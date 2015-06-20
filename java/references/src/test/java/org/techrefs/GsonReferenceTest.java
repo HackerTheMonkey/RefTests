@@ -5,6 +5,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
 import lombok.Data;
 import org.junit.Test;
+import org.techrefs.gson.AClassWithoutZeroArgConstructor;
+import org.techrefs.gson.Id;
 
 import java.lang.reflect.Type;
 

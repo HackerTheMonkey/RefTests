@@ -1,4 +1,4 @@
-package org.techrefs;
+package org.techrefs.gson;
 
 public class Id<T> {
     private final Class<T> className;
