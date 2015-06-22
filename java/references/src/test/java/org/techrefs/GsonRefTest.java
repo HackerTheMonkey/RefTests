@@ -13,7 +13,7 @@ import java.lang.reflect.Type;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
-public class GsonReferenceTest {
+public class GsonRefTest {
     @Test
     public void how_to_create_a_GSON_instance_with_default_config() {
         Gson gson = new Gson();

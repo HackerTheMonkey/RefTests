@@ -1,6 +1,6 @@
 package org.techrefs;
 
-public class LomBokReferenceTest {
+public class LomBokRefTest {
     /**
      * TODO
      */

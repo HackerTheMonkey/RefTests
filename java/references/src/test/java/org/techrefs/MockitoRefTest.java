@@ -26,7 +26,7 @@ import static org.hamcrest.text.IsEmptyString.isEmptyString;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
-public class MockitoReferenceTest {
+public class MockitoRefTest {
 
     @Test
     public void verify_that_calls_to_a_mocked_object_have_actually_happened() {
@@ -637,8 +637,60 @@ public class MockitoReferenceTest {
 
     }
 
+    @Test
+    public void we_can_reset_the_state_of_mock_objects_after_they_have_been_used(){
+        /**
+         * Reseting mocks is considered to be some sort of a code smell as it is a
+         * sign that we are testing too much and that our tests could be overspecified.
+         * Ideally, we should be having tests that are small enough and be testing a single
+         * aspect of our code at a time.
+         */
+
+        /**
+         * Let's create a mock list
+         */
+        List list = mock(List.class);
+
+        /**
+         * Let's stub the size of the list
+         */
+        when(list.size()).thenReturn(10);
+
+        /**
+         * Let's test and verify the interaction
+         */
+        assertThat(list.size(), is(10));
+        verify(list).size();
+        /**
+         * Let's reset our mocked list
+         */
+        reset(list);
+        /**
+         * After the reset method has been called, then all the stubbing and
+         * the previous interaction data should have been erased.
+         */
+        verifyZeroInteractions(list);
+        assertThat(list.size(), is(0));
+    }
+
+    @Test
+    public void given_IHaveAMockWithOverridenDefaultReturnValues_when_IResetTheMock_then_OverridenDefaultReturnValuesShouldBePreserved(){
+        ArrayList arrayList = mock(ArrayList.class, new Answer() {
+            @Override
+            public String answer(InvocationOnMock invocation) throws Throwable {
+                return "FOO";
+            }
+        });
+
+        assertThat(arrayList.get(0), is("FOO"));
+
+        reset(arrayList);
+
+        assertThat(arrayList.get(0), is("FOO"));
+
+    }
     /**
-     * http://site.mockito.org/mockito/docs/current/org/mockito/Mockito.html#15
+     * http://site.mockito.org/mockito/docs/current/org/mockito/Mockito.html#resetting_mocks
      */
 
 
