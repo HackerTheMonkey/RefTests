@@ -23,6 +23,7 @@ import java.util.Map;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.text.IsEmptyString.isEmptyString;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -690,8 +691,46 @@ public class MockitoRefTest {
         assertThat(arrayList.get(0), is("FOO"));
 
     }
+
+    @Test
+    public void improper_framework_usage_might_go_undetected_until_next_time_we_use_the_framework(){
+        List<String> mock = mock(List.class);
+        verify(mock); // Improper use that could go undetected until next time we call a Mockito function
+        // if it wasn't for the explicit call of validateMockitoUsage();
+
+        /**
+         * To allow for an early detection of improper use of the framework, we need to explicitly
+         * validate the usage of the framework so we don't need to wait until the next time we use
+         * the framework in order to know. Also this will allow JUnit to flag the defected test method
+         * rather than the next one in the case of an improper usage.
+         *
+         * Alternative to the invokation of the validateMockitoUsage(), we can use a MockitoRule or
+         * the MockitoJUnitRunner.
+         *
+         * P.S. the validateMockitoUsage() can be also included in the @After method so it can run after
+         * each and every test metohod.
+         */
+        validateMockitoUsage();
+    }
+
+    @Test
+    public void use_the_fancy_BDDMockito_style_of_writing_tests() {
+
+        Seller seller = mock(Seller.class);
+        Shop shop = new Shop();
+
+        // Given
+        given(seller.askForBread()).willReturn(new Bread());
+
+        // When
+        Goods goods = shop.buyBread();
+
+        // Then
+        assertThat(goods.containsBread(), is(true));
+    }
+
     /**
-     * http://site.mockito.org/mockito/docs/current/org/mockito/Mockito.html#resetting_mocks
+     * http://site.mockito.org/mockito/docs/current/org/mockito/Mockito.html#bdd_mockito
      */
 
     /**
@@ -744,4 +783,27 @@ public class MockitoRefTest {
 
     }
 
+    private static class Seller{
+        public Bread askForBread() {
+            return new Bread();
+        }
+    }
+
+    private static class Bread{
+
+    }
+
+    private static class Shop{
+
+        public Goods buyBread() {
+            return new Goods();
+        }
+    }
+
+    private static class Goods{
+
+        public boolean containsBread() {
+            return true;
+        }
+    }
 }
