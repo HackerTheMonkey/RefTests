@@ -576,7 +576,8 @@ public class MockitoRefTest {
 
         /**
          * Create an ArgumentCaptor that would potentially capture arguments passed to mocks
-         * that are of the type Person
+         * that are of the type Person. Note that Person is the type of teh argument that
+         * we would like to capture.
          */
         ArgumentCaptor<Person> personArgumentCaptor = ArgumentCaptor.forClass(Person.class);
         PersonProcessor personProcessor = mock(PersonProcessor.class);
@@ -691,6 +692,12 @@ public class MockitoRefTest {
     }
     /**
      * http://site.mockito.org/mockito/docs/current/org/mockito/Mockito.html#resetting_mocks
+     */
+
+    /**
+     * TODO
+     *  - What the heck argThat is all about???
+     *  - And also what's best to do with OngoingStubbing
      */
 
 
