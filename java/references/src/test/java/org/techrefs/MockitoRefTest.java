@@ -6,10 +6,12 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.TypeSafeMatcher;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
+import org.mockito.exceptions.misusing.UnfinishedVerificationException;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -692,7 +694,7 @@ public class MockitoRefTest {
 
     }
 
-    @Test
+    @Test(expected = UnfinishedVerificationException.class)
     public void improper_framework_usage_might_go_undetected_until_next_time_we_use_the_framework(){
         List<String> mock = mock(List.class);
         verify(mock); // Improper use that could go undetected until next time we call a Mockito function
