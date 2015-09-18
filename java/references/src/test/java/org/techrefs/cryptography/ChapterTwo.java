@@ -1,12 +1,12 @@
 package org.techrefs.cryptography;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.techrefs.gson.cryptography.CryptoUtils;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-
 import java.security.InvalidKeyException;
 import java.util.Arrays;
 
@@ -17,7 +17,9 @@ import static org.techrefs.gson.cryptography.CryptoUtils.toHex;
 // It's too verbose and ugly code, cause I am still learning and like to type the API repeatedly
 // Clean code will make me right less, so not doing it while in learning mode.
 // My intention here is to learn the underlying principles rather than how to code, which I consider myself very good at
+@Slf4j
 public class ChapterTwo {
+
     @Test
     public void some_basic_encryption_decryption_using_AES_ECB_withNoPadding() throws Exception{
 
@@ -206,8 +208,8 @@ public class ChapterTwo {
         bytesWrittenByCipherSoFar += desCipher.doFinal(encryptedText, bytesWrittenByCipherSoFar);
 
         // Print out for comparision
-        System.out.println(String.format("InputData: %s, Length: %s", CryptoUtils.toHex(inputData), inputData.length));
-        System.out.println(String.format("EncryptedData: %s, Length: %s", CryptoUtils.toHex(encryptedText), bytesWrittenByCipherSoFar));
+        System.out.println(String.format("InputData: %s, Length: %s", toHex(inputData), inputData.length));
+        System.out.println(String.format("EncryptedData: %s, Length: %s", toHex(encryptedText), bytesWrittenByCipherSoFar));
 
         // Decrypt back into the initial plain text
         desCipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
@@ -222,7 +224,7 @@ public class ChapterTwo {
         bytesDecryptedSoFar += desCipher.doFinal(decryptedData, bytesDecryptedSoFar);
 
         // print out for comparision
-        System.out.println(String.format("DecryptedData: %s, Length: %s", CryptoUtils.toHex(decryptedData), bytesDecryptedSoFar));
+        System.out.println(String.format("DecryptedData: %s, Length: %s", toHex(decryptedData), bytesDecryptedSoFar));
     }
 
     @Test
@@ -259,8 +261,8 @@ public class ChapterTwo {
         bytesCipheredSoFar += cipher.doFinal(cipherText, bytesCipheredSoFar);
 
         // print it out
-        System.out.println(String.format("PlainText: %s, Length: %s", CryptoUtils.toHex(inputData), inputData.length));
-        System.out.println(String.format("CipheredText: %s, Length: %s", CryptoUtils.toHex(cipherText), bytesCipheredSoFar));
+        System.out.println(String.format("PlainText: %s, Length: %s", toHex(inputData), inputData.length));
+        System.out.println(String.format("CipheredText: %s, Length: %s", toHex(cipherText), bytesCipheredSoFar));
 
         // init the cipher for decryption preparation, don't forget the IV
         cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, ivParameterSpec);
@@ -273,7 +275,7 @@ public class ChapterTwo {
         bytesDecipheredSoFar += cipher.doFinal(decipheredText, bytesDecipheredSoFar);
 
         // print it out
-        System.out.println(String.format("DecipheredText: %s, Length: %s", CryptoUtils.toHex(decipheredText, bytesDecipheredSoFar), bytesDecipheredSoFar));
+        System.out.println(String.format("DecipheredText: %s, Length: %s", toHex(decipheredText, bytesDecipheredSoFar), bytesDecipheredSoFar));
 
         // The comparision should ignore any padding that has been added and only consider the actual bytes written
         // by the cipher.
@@ -283,7 +285,7 @@ public class ChapterTwo {
         System.out.println("decrypted output String" + new String(Arrays.copyOf(decipheredText, bytesDecipheredSoFar)));
     }
 
-    @Test(expected = InvalidKeyException.class)
+    @Test(expected = InvalidKeyException.class)// aparently we have to provide an IV if out cipher needs it.
     public void using_DES_with_CBC_mode_but_not_providing_an_IV_to_see_what_happens() throws Exception {
 
         /**
@@ -313,8 +315,8 @@ public class ChapterTwo {
         bytesCipheredSoFar += cipher.doFinal(cipherText, bytesCipheredSoFar);
 
         // print it out
-        System.out.println(String.format("PlainText: %s, Length: %s", CryptoUtils.toHex(inputData), inputData.length));
-        System.out.println(String.format("CipheredText: %s, Length: %s", CryptoUtils.toHex(cipherText), bytesCipheredSoFar));
+        System.out.println(String.format("PlainText: %s, Length: %s", toHex(inputData), inputData.length));
+        System.out.println(String.format("CipheredText: %s, Length: %s", toHex(cipherText), bytesCipheredSoFar));
 
         // init the cipher for decryption preparation, don't forget the IV
         cipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
@@ -327,7 +329,7 @@ public class ChapterTwo {
         bytesDecipheredSoFar += cipher.doFinal(decipheredText, bytesDecipheredSoFar);
 
         // print it out
-        System.out.println(String.format("DecipheredText: %s, Length: %s", CryptoUtils.toHex(decipheredText, bytesDecipheredSoFar), bytesDecipheredSoFar));
+        System.out.println(String.format("DecipheredText: %s, Length: %s", toHex(decipheredText, bytesDecipheredSoFar), bytesDecipheredSoFar));
 
         // The comparision should ignore any padding that has been added and only consider the actual bytes written
         // by the cipher.
@@ -336,4 +338,66 @@ public class ChapterTwo {
         // print out a string representation of the deciphered text to see if it results in our original data.
         System.out.println("decrypted output String" + new String(Arrays.copyOf(decipheredText, bytesDecipheredSoFar)));
     }
+
+    @Test
+    public void using_DES_with_CBC_mode_but_this_time_we_are_going_to_have_an_inline_iv_and_a_seed_ciphered_block() throws Exception {
+        /**
+         * As an alternative to providing a fixed IV in an out of band fashion, we can expect that the IV will be
+         * provided alongside the message and it's the responsibility of us to read past it when encrypting and
+         * decryoting.
+         */
+
+        // This is out input message, in plain text
+        byte[] input = "{foo: bar, x:dd }".getBytes();
+        log.info("InputData: {}, Length: {} bytes", new String(input), input.length);
+        log.info("InputData: {}, Length: {} bytes", toHex(input), input.length);
+
+        // manually set the DES key
+        SecretKeySpec key = new SecretKeySpec(new byte[]{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07}, "DES");
+
+        // we need an all-zero IV to start with
+        IvParameterSpec allZeroIV = new IvParameterSpec(new byte[8]);
+
+        // the inline IV bytes that we are assuming they have been sent to us with the plain text to encrypt
+        // the size of these should conform to the size of the underlying algorithm block
+        byte[] ivBytes = {0x10, 0x21, 0x32, 0x43, 0x54, 0x65, 0x76, (byte) 0x87};
+
+        // get an instance of a DES Cipher and initialize it for encryption
+        Cipher cipher = Cipher.getInstance("DES/CBC/PKCS7Padding");
+        cipher.init(Cipher.ENCRYPT_MODE, key, allZeroIV);
+
+        // let's ask the cipher about what he thinks the size of our output bucket should be
+        int totalMessageSize = ivBytes.length + input.length; // iv + plain text payload
+        byte[] cipheredText = new byte[cipher.getOutputSize(totalMessageSize)];
+
+        // let's encrypt, shall we?
+        int numberOfEncryptedBytes = cipher.update(ivBytes, 0, ivBytes.length, cipheredText, 0);
+        numberOfEncryptedBytes += cipher.update(input, 0, input.length, cipheredText, numberOfEncryptedBytes);
+        numberOfEncryptedBytes += cipher.doFinal(cipheredText, numberOfEncryptedBytes);
+        log.info("CipheredText: {}, Length: {} bytes", toHex(cipheredText, numberOfEncryptedBytes), numberOfEncryptedBytes);
+
+        // decrypt all that
+
+        // Consult the cipher as how big our decryption buffer should be
+        byte[] decryptionBuffer = new byte[cipher.getOutputSize(numberOfEncryptedBytes)];
+
+        // re-init the cipher for decryption
+        cipher.init(Cipher.DECRYPT_MODE, key, allZeroIV);
+
+        // at the end of this, the decryptionBuffer will contain the initial IV + our plain text
+        int bytesDecryptedSoFar = cipher.update(cipheredText, 0, numberOfEncryptedBytes, decryptionBuffer, 0);
+        bytesDecryptedSoFar += cipher.doFinal(decryptionBuffer, bytesDecryptedSoFar);
+
+        // retrieve the plainText message out of the decryption buffer
+        byte[] plainText = new byte[bytesDecryptedSoFar - ivBytes.length];
+        System.arraycopy(decryptionBuffer, ivBytes.length, plainText, 0, plainText.length);
+
+        log.info("PlainText: {}, Length: {} Bytes", new String(plainText), plainText.length);
+        log.info("PlainText: {}, Length: {} Bytes", toHex(plainText), plainText.length);
+
+        assertThat(plainText, is(input));
+    }
+
+
+
 }
