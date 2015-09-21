@@ -2,12 +2,12 @@ package org.techrefs.cryptography;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
-import org.techrefs.gson.cryptography.CryptoUtils;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.InvalidKeyException;
+import java.security.SecureRandom;
 import java.util.Arrays;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -398,6 +398,121 @@ public class ChapterTwo {
         assertThat(plainText, is(input));
     }
 
+    @Test
+    public void use_java_SecureRandom_to_aid_in_creating_a_random_IV() throws Exception {
+        // construct the input
+        byte[] input = "{foo: bar, x:dd }".getBytes();
+        log.info("InputData: {}, Length: {} bytes", new String(input), input.length);
+        log.info("InputData: {}, Length: {} bytes", toHex(input), input.length);
 
+        // manually set the DES key
+        SecretKeySpec key = new SecretKeySpec(new byte[]{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07}, "DES");
+
+        /**
+         * A random IV need to be created, we are going to use an implementation
+         * og Java's SecureRandom to obtain a random number
+         */
+        byte[] randomIvBytes = new byte[8];
+
+        // generate the random numbers
+        SecureRandom secureRandom = new SecureRandom();
+        secureRandom.nextBytes(randomIvBytes);
+
+        // use them to feed the IV generation
+        IvParameterSpec randomIV = new IvParameterSpec(randomIvBytes);
+
+
+        // get an instance of a DES Cipher and initialize it for encryption
+        Cipher cipher = Cipher.getInstance("DES/CBC/PKCS7Padding");
+        cipher.init(Cipher.ENCRYPT_MODE, key, randomIV);
+
+        // let's ask the cipher about what he thinks the size of our output bucket should be
+        byte[] cipheredText = new byte[cipher.getOutputSize(input.length)];
+
+        // let's encrypt, shall we?
+        int numberOfEncryptedBytes = cipher.update(input, 0, input.length, cipheredText, 0);
+        numberOfEncryptedBytes += cipher.doFinal(cipheredText, numberOfEncryptedBytes);
+        log.info("CipheredText: {}, Length: {} bytes", toHex(cipheredText, numberOfEncryptedBytes), numberOfEncryptedBytes);
+
+        // decrypt all that
+
+        // Consult the cipher as how big our decryption buffer should be
+        byte[] plainText = new byte[cipher.getOutputSize(numberOfEncryptedBytes)];
+
+        // re-init the cipher for decryption
+        cipher.init(Cipher.DECRYPT_MODE, key, randomIV);
+
+        // let's decrypt
+        int bytesDecryptedSoFar = cipher.update(cipheredText, 0, numberOfEncryptedBytes, plainText, 0);
+        bytesDecryptedSoFar += cipher.doFinal(plainText, bytesDecryptedSoFar);
+
+        log.info("PlainText: {}, Length: {} Bytes", new String(Arrays.copyOfRange(plainText, 0, bytesDecryptedSoFar)), bytesDecryptedSoFar);
+        log.info("PlainText: {}, Length: {} Bytes", toHex(plainText, bytesDecryptedSoFar), bytesDecryptedSoFar);
+
+        // Make sure that what we have decrypted is exactly the same as out plain text input
+        assertThat(Arrays.copyOfRange(plainText, 0, bytesDecryptedSoFar), is(input));
+    }
+
+    @Test
+    public void use_java_SecureRandom_with_SHA1PRNG_to_aid_in_creating_a_random_IV() throws Exception {
+        // construct the input
+        byte[] input = "{foo: bar, x:dd }".getBytes();
+        log.info("InputData: {}, Length: {} bytes", new String(input), input.length);
+        log.info("InputData: {}, Length: {} bytes", toHex(input), input.length);
+
+        // manually set the DES key
+        SecretKeySpec key = new SecretKeySpec(new byte[]{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07}, "DES");
+
+        /**
+         * A random IV need to be created, we are going to use an implementation
+         * og Java's SecureRandom to obtain a random number
+         */
+        byte[] randomIvBytes = new byte[8];
+
+        // generate the random numbers
+        SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
+        log.info("Selected PRNG provider is {}", secureRandom.getProvider().getName());
+        secureRandom.nextBytes(randomIvBytes);
+
+        // use them to feed the IV generation
+        IvParameterSpec randomIV = new IvParameterSpec(randomIvBytes);
+
+        // get an instance of a DES Cipher and initialize it for encryption
+        Cipher cipher = Cipher.getInstance("DES/CBC/PKCS7Padding");
+        cipher.init(Cipher.ENCRYPT_MODE, key, randomIV);
+
+        // let's ask the cipher about what he thinks the size of our output bucket should be
+        byte[] cipheredText = new byte[cipher.getOutputSize(input.length)];
+
+        // let's encrypt, shall we?
+        int numberOfEncryptedBytes = cipher.update(input, 0, input.length, cipheredText, 0);
+        numberOfEncryptedBytes += cipher.doFinal(cipheredText, numberOfEncryptedBytes);
+        log.info("CipheredText: {}, Length: {} bytes", toHex(cipheredText, numberOfEncryptedBytes), numberOfEncryptedBytes);
+
+        // decrypt all that
+
+        // Consult the cipher as how big our decryption buffer should be
+        byte[] plainText = new byte[cipher.getOutputSize(numberOfEncryptedBytes)];
+
+        // re-init the cipher for decryption
+        cipher.init(Cipher.DECRYPT_MODE, key, randomIV);
+
+        // let's decrypt
+        int bytesDecryptedSoFar = cipher.update(cipheredText, 0, numberOfEncryptedBytes, plainText, 0);
+        bytesDecryptedSoFar += cipher.doFinal(plainText, bytesDecryptedSoFar);
+
+        log.info("PlainText: {}, Length: {} Bytes", new String(Arrays.copyOfRange(plainText, 0, bytesDecryptedSoFar)), bytesDecryptedSoFar);
+        log.info("PlainText: {}, Length: {} Bytes", toHex(plainText, bytesDecryptedSoFar), bytesDecryptedSoFar);
+
+        // Make sure that what we have decrypted is exactly the same as out plain text input
+        assertThat(Arrays.copyOfRange(plainText, 0, bytesDecryptedSoFar), is(input));
+    }
+
+    /**
+     * TODO
+     * - research the possible ways in which we can create a SecureRandom number and the differnces
+     * among these methods as well as what do they mean and what particular instance/implementation
+     * of the RNG algorithim is being returned by the JDK
+     */
 
 }
