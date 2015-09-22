@@ -4,9 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
 import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
@@ -465,7 +467,7 @@ public class ChapterTwo {
 
         /**
          * A random IV need to be created, we are going to use an implementation
-         * og Java's SecureRandom to obtain a random number
+         * of Java's SecureRandom to obtain a random number
          */
         byte[] randomIvBytes = new byte[8];
 
@@ -506,6 +508,70 @@ public class ChapterTwo {
 
         // Make sure that what we have decrypted is exactly the same as out plain text input
         assertThat(Arrays.copyOfRange(plainText, 0, bytesDecryptedSoFar), is(input));
+    }
+
+    @Test
+    public void lets_create_an_IV_out_of_a_message_number_chosen_as_nonce() throws Exception {
+        // construct the input
+
+        String inputText = "{foo: bar, x:dd }";
+
+        byte[] input = inputText.getBytes();
+        log.info("InputData: {}, Length: {} bytes", new String(input), input.length);
+        log.info("InputData: {}, Length: {} bytes", toHex(input), input.length);
+
+        // All ZEROs IV to use to generate the encryption IV
+        byte[] allZeroIVBytes = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+
+        // our unique message number, somehting really simple that we ar happy to consider as a NONCE
+        byte[] messageNumber = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, (byte) 0x88};
+
+        // here is our DES key
+        SecretKeySpec key = new SecretKeySpec(new byte[]{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07}, "DES");
+
+        /**
+         * IV generation from the message number
+         */
+        // Generate an IV via using a message number as a NONCE
+        Cipher cipher = Cipher.getInstance("DES/CBC/PKCS7Padding", "BC");
+
+        // Init the cipher for encryption, i.e. Initial IV generation
+        cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(allZeroIVBytes));
+
+        // Generate our IV to be used for encryption (by encrypting the message number)
+        IvParameterSpec encryptionIV = new IvParameterSpec(cipher.doFinal(messageNumber), 0, 8);
+        log.info("IV generated from the message number {}, length: {}", toHex(encryptionIV.getIV()), encryptionIV.getIV().length);
+
+        /**
+         * Input message encryption
+         */
+        // re-init the cipher for encryption, using the newly generated IV
+        cipher.init(Cipher.ENCRYPT_MODE, key, encryptionIV);
+
+        byte[] cipherText = new byte[cipher.getOutputSize(input.length)];
+
+        int bytesEncrypted = cipher.update(input, 0, input.length, cipherText, 0);
+        bytesEncrypted += cipher.doFinal(cipherText, bytesEncrypted);
+
+        log.info("CipherText: {}, Length: {}", toHex(cipherText), bytesEncrypted);
+
+        /**
+         * Cipher test decryption
+         */
+        // re-init the cipher for decryption
+        cipher.init(Cipher.DECRYPT_MODE, key, encryptionIV);
+
+        byte[] decryptedData = new byte[cipher.getOutputSize(bytesEncrypted)];
+        int bytesDecrypted = cipher.update(cipherText, 0, bytesEncrypted, decryptedData, 0);
+        bytesDecrypted += cipher.doFinal(decryptedData, bytesDecrypted);
+
+        log.info("deCipheredText: {}, Length: {}", toHex(decryptedData, bytesDecrypted), bytesDecrypted);
+        log.info("plainText: {}, Length: {}", new String(Arrays.copyOfRange(decryptedData, 0, bytesDecrypted)), Arrays.copyOfRange(decryptedData, 0, bytesDecrypted).length);
+
+        /**
+         * Making sure that the decrypted message is the same as the initial plain text
+         */
+        assertThat(new String(Arrays.copyOfRange(decryptedData, 0, bytesDecrypted)), is(inputText));
     }
 
     /**
