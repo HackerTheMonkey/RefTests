@@ -574,6 +574,68 @@ public class ChapterTwo {
         assertThat(new String(Arrays.copyOfRange(decryptedData, 0, bytesDecrypted)), is(inputText));
     }
 
+    @Test
+    public void lets_do_a_bit_of_DES_with_CTS_mode() throws Exception{
+
+        // construct the input
+        String inputText = "{foo: bar, x:dd }";
+
+        byte[] input = inputText.getBytes();
+        log.info("InputData: {}, Length: {} bytes", new String(input), input.length);
+        log.info("InputData: {}, Length: {} bytes", toHex(input), input.length);
+
+        // Some bytes to be used for our IV
+        byte[] ivBytes = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, (byte) 0x88};
+
+        // here is our DES key
+        SecretKeySpec key = new SecretKeySpec(new byte[]{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07}, "DES");
+
+        // Get an instance of our cipher. this time using CTS mode.
+        // This mode doesn't require any paddings, and it should produce
+        // a cipher text that is the same length of the input plain text.
+        Cipher cipher = Cipher.getInstance("DES/CTS/NoPadding", "BC");
+
+        // Create an IV out of the IVBytes
+        IvParameterSpec encryptionIV = new IvParameterSpec(ivBytes);
+
+        /**
+         * Input message encryption
+         */
+        // re-init the cipher for encryption, using the newly generated IV
+        cipher.init(Cipher.ENCRYPT_MODE, key, encryptionIV);
+
+        byte[] cipherText = new byte[cipher.getOutputSize(input.length)];
+
+        int bytesEncrypted = cipher.update(input, 0, input.length, cipherText, 0);
+        bytesEncrypted += cipher.doFinal(cipherText, bytesEncrypted);
+
+        log.info("CipherText: {}, Length: {}", toHex(cipherText), bytesEncrypted);
+
+        /**
+         * Let's make sure that the size of the cipher text is the same as the
+         * size of the input data, despite not using any padding as we are using
+         * CTS mode.
+         */
+        assertThat(input.length, is(bytesEncrypted));
+        /**
+         * Cipher test decryption
+         */
+        // re-init the cipher for decryption
+        cipher.init(Cipher.DECRYPT_MODE, key, encryptionIV);
+
+        byte[] decryptedData = new byte[cipher.getOutputSize(bytesEncrypted)];
+        int bytesDecrypted = cipher.update(cipherText, 0, bytesEncrypted, decryptedData, 0);
+        bytesDecrypted += cipher.doFinal(decryptedData, bytesDecrypted);
+
+        log.info("deCipheredText: {}, Length: {}", toHex(decryptedData, bytesDecrypted), bytesDecrypted);
+        log.info("plainText: {}, Length: {}", new String(Arrays.copyOfRange(decryptedData, 0, bytesDecrypted)), Arrays.copyOfRange(decryptedData, 0, bytesDecrypted).length);
+
+        /**
+         * Making sure that the decrypted message is the same as the initial plain text
+         */
+        assertThat(new String(Arrays.copyOfRange(decryptedData, 0, bytesDecrypted)), is(inputText));
+    }
+
     /**
      * TODO
      * - research the possible ways in which we can create a SecureRandom number and the differnces
