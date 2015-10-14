@@ -1,4 +1,4 @@
-package org.techrefs.cryptography;
+package org.techrefs.cryptography.book;
 
 import org.junit.Test;
 

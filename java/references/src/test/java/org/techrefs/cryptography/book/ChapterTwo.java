@@ -1,4 +1,4 @@
-package org.techrefs.cryptography;
+package org.techrefs.cryptography.book;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
@@ -9,6 +9,8 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.ByteBuffer;
+import java.security.AlgorithmParameters;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -28,9 +30,9 @@ public class ChapterTwo {
     public void some_basic_encryption_decryption_using_AES_ECB_withNoPadding() throws Exception{
 
         // here is our secret message that we want to keep it from others' eyes.
-        byte[] inputData = new byte[]{0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
-                               (byte) 0x88, (byte)0x99, (byte)0xaa, (byte)0xbb, (byte)0xcc,
-                               (byte) 0xdd, (byte) 0xee, (byte)0xff
+            byte[] inputData = new byte[]{0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
+                                   (byte) 0x88, (byte)0x99, (byte)0xaa, (byte)0xbb, (byte)0xcc,
+                                   (byte) 0xdd, (byte) 0xee, (byte)0xff
         };
 
         // some fixed bytes to use as our symmetric encryption/decryption key
@@ -525,7 +527,7 @@ public class ChapterTwo {
         // All ZEROs IV to use to generate the encryption IV
         byte[] allZeroIVBytes = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
 
-        // our unique message number, somehting really simple that we ar happy to consider as a NONCE
+        // our unique message number, something really simple that we ar happy to consider as a NONCE
         byte[] messageNumber = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, (byte) 0x88};
 
         // here is our DES key
@@ -702,11 +704,65 @@ public class ChapterTwo {
         assertThat(new String(Arrays.copyOfRange(decryptedData, 0, bytesDecrypted)), is(inputText));
     }
 
-    /**
-     * TODO
-     * - research the possible ways in which we can create a SecureRandom number and the differnces
-     * among these methods as well as what do they mean and what particular instance/implementation
-     * of the RNG algorithim is being returned by the JDK
-     */
+    @Test
+    public void cipher_parameterObjects_vs_parameterSpecs() throws Exception{
+        // construct the input
+        String inputText = "{foo: bar, x:dd, y:hah }";
+
+        byte[] input = inputText.getBytes();
+        log.info("InputData: {}, Length: {} bytes", new String(input), input.length);
+        log.info("InputData: {}, Length: {} bytes", toHex(input), input.length);
+
+        // Create some IV to init our cipher with.
+        byte[] ivBytes = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, (byte) 0x88};
+        IvParameterSpec ivParameterSpec = new IvParameterSpec(ivBytes);
+
+        log.info("originalIV: {}", toHex(ivParameterSpec.getIV()));
+
+        // here is our DES key
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+        keyGenerator.init(64);
+        SecretKey key = keyGenerator.generateKey();
+
+        // Get an instance of our cipher. this time using CTS mode.
+        // This mode doesn't require any paddings, and it should produce
+        // a cipher text that is the same length of the input plain text.
+        Cipher cipher = Cipher.getInstance("DES/CTS/NoPadding", "BC");
+        cipher.init(Cipher.ENCRYPT_MODE, key, ivParameterSpec);
+        /**
+         * Let's attempt to retrieve AlgorithmParameters out of our cipher and use them to obtain an
+         * instance of the IvParameterSpec that the cipher has been initialized with then we can check
+         * if it will be the same as the IV that we have initialized our cipher with.
+         *
+         * Note: if we don't initialize the cipher with an IV, then the cipher will always gives us
+         * a newly generated random IV.
+         */
+        AlgorithmParameters desParameters = cipher.getParameters();
+
+        log.info("encoded form of the DES parameters: {}, length: {}", toHex(desParameters.getEncoded()), desParameters.getEncoded().length);
+        IvParameterSpec retrievedIV = desParameters.getParameterSpec(IvParameterSpec.class);
+
+        assertThat(toHex(retrievedIV.getIV()), is(toHex(ivParameterSpec.getIV())));
+
+        log.info("retrievedIV: {}", toHex(retrievedIV.getIV()));
+
+        /**
+         * For the sake of argument, let's assume that we have extracted an ASN.1 encoded form of the AlgorithmParameters
+         * during the time of encryption and we have sent this over to the other end to be able to recover the algorithm
+         * parameters and rebuild it.
+         *
+         * If that's the case, then we need to make sure that the recovered IV would be the same as the one that we have
+         * started with during the encryption time.
+         */
+        // get the encoded form, send it over to our recepient
+        byte[] encodedParametersASN1 = desParameters.getEncoded();
+        // recreate the AlgorithmParameters so that we can recover the IV out of it.
+        AlgorithmParameters reconstructedAlgorithmParameters = AlgorithmParameters.getInstance("DES", "BC");
+        reconstructedAlgorithmParameters.init(encodedParametersASN1);
+        // get an IVParameterSpec out of it
+        IvParameterSpec reconstructedIV = reconstructedAlgorithmParameters.getParameterSpec(IvParameterSpec.class);
+        // make sure that the reconstructed IV is the same as the original one used during encryption
+        assertThat(toHex(reconstructedIV.getIV()), is(toHex(ivParameterSpec.getIV())));
+    }
 
 }

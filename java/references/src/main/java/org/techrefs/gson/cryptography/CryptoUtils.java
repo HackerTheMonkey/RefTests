@@ -1,8 +1,11 @@
 package org.techrefs.gson.cryptography;
 
+import static java.lang.String.format;
+
 public class CryptoUtils {
 
     public static final String hexNumbers = "0123456789abcdef";
+    public static final String SPACE = " ";
 
     public static String toHex(byte[] input) {
         StringBuffer stringBuffer = new StringBuffer();
@@ -24,6 +27,18 @@ public class CryptoUtils {
         }
 
         return stringBuffer.toString();
+    }
+
+    public static byte[] toByteArray(String hexString){
+        String[] splitted = hexString.split(SPACE);
+        byte[] output = new byte[splitted.length];
+
+        for(int i = 0 ; i < splitted.length ; i++) {
+            int intermediateValue = Integer.decode(format("0x%s", splitted[i]));
+            output[i] = (byte) intermediateValue;
+        }
+
+        return output;
     }
 
 }
