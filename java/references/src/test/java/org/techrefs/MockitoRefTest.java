@@ -15,12 +15,7 @@ import org.mockito.exceptions.misusing.UnfinishedVerificationException;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -51,6 +46,16 @@ public class MockitoRefTest {
         verify(mockList, times(1)).add("One");//times(1) is the default behaviour and can actually be ommitted.
         verify(mockList).clear();
         verify(mockList, never()).add("Two"); // never() is an alias for times(0)
+    }
+
+    @Test
+    public void it(){
+        List mockList = mock(List.class);
+
+        when(mockList.get(0)).thenReturn(1).thenThrow(IllegalFormatException.class);
+
+        assertThat(mockList.get(0), is(1));
+        mockList.get(0);
     }
 
     @Test(expected = RuntimeException.class)

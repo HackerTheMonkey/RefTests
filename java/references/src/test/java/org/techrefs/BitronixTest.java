@@ -19,7 +19,6 @@ public class BitronixTest {
 
         BitronixTransactionManager transactionManager = TransactionManagerServices.getTransactionManager();
 
-
         transactionManager.begin();
 
         new FooClass();

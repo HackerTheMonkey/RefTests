@@ -49,7 +49,7 @@ public class ChapterOne {
          * Here is the data that we want to ecnrypt. It has to be a multiple
          * of 8 bytes as per the Blowfish requirement!
          */
-        String secretMessage = "hasanein"; //64-bit string
+        String secretMessage = "testtest"; //64-bit string
         /**
          * Create a 64-bit symmetric encryption key
          */

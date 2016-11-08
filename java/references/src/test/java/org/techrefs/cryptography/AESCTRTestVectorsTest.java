@@ -2,6 +2,11 @@ package org.techrefs.cryptography;
 
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.zip.InflaterInputStream;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.techrefs.gson.cryptography.CryptoUtils.toByteArray;
@@ -306,6 +311,37 @@ public class AESCTRTestVectorsTest {
 
         ctrCipher.resetCounter();
         assertThat(ctrCipher.encrypt(cipherText),is(plainText));
+    }
+
+    @Test
+    public void it() throws IOException {
+        System.out.println(new String(toByteArray("30 32 37 37")));
+        System.out.println(toByteArray("78 9c 55 50 51 4b c3 30 18 fc 2b 79 9c 20 e5 2e 69 da ce b7 cd 75 08 fa 20 73 15 f6 34 ea cc ec 58 c9 20 eb 10 fc 61 fe 01 ff 98 5f 32 b0 18 08 e1 2e 77 f7 5d d2 6c 1f ea d9 02 04 ac 31 86 39 2d b5 25 99 ab 71 11 d4 1a 72 53 5a 8b 45 ad 54 b3 5d 3f cd 36 62 32 15 56 f7 6b 0d b0 94 5d 81 c6 08 c0 74 d9 76 e1 d8 86 c1 49 ac 38 31 15 12 d5 67 77 18 da a3 0b 40 f1 47 9a 37 e7 c1 ab 55 4a 90 8f 97 f0 75 1e 82 db 1d 9d 8c 8c ba 98 28 17 82 ac 1c 45 04 78 76 e1 7c f2 13 e7 6f 60 04 12 79 14 e5 b1 25 cc 35 2d 99 e6 2e f4 07 af 26 73 88 30 a6 31 85 49 ad 0c cc 38 2d 2b 14 c9 6f 23 6f 89 8c 5a 98 72 64 ca cc e6 28 28 53 52 0f 8d 65 7f f9 e8 da bd f3 ea 65 d7 fd 7c 7b b7 77 3d 8a d4 f4 5f 88 ad 46 a6 92 10 a6 b7 d8 f8 1c 6d 5f db fe f0 ae 4e 5e 25 71 16 7b 2b 96 77 a2 4a 2d 61 d2 df d4 cd 4a b0 14 64 ca c9 79 5b e0 17 d2 ac 64 99").length);
+
+        /**
+         * Prepare out compressed data
+         */
+        byte[] compressedData = toByteArray("78 9c 55 50 51 4b c3 30 18 fc 2b 79 9c 20 e5 2e 69 da ce b7 cd 75 08 fa 20 73 15 f6 34 ea cc ec 58 c9 20 eb 10 fc 61 fe 01 ff 98 5f 32 b0 18 08 e1 2e 77 f7 5d d2 6c 1f ea d9 02 04 ac 31 86 39 2d b5 25 99 ab 71 11 d4 1a 72 53 5a 8b 45 ad 54 b3 5d 3f cd 36 62 32 15 56 f7 6b 0d b0 94 5d 81 c6 08 c0 74 d9 76 e1 d8 86 c1 49 ac 38 31 15 12 d5 67 77 18 da a3 0b 40 f1 47 9a 37 e7 c1 ab 55 4a 90 8f 97 f0 75 1e 82 db 1d 9d 8c 8c ba 98 28 17 82 ac 1c 45 04 78 76 e1 7c f2 13 e7 6f 60 04 12 79 14 e5 b1 25 cc 35 2d 99 e6 2e f4 07 af 26 73 88 30 a6 31 85 49 ad 0c cc 38 2d 2b 14 c9 6f 23 6f 89 8c 5a 98 72 64 ca cc e6 28 28 53 52 0f 8d 65 7f f9 e8 da bd f3 ea 65 d7 fd 7c 7b b7 77 3d 8a d4 f4 5f 88 ad 46 a6 92 10 a6 b7 d8 f8 1c 6d 5f db fe f0 ae 4e 5e 25 71 16 7b 2b 96 77 a2 4a 2d 61 d2 df d4 cd 4a b0 14 64 ca c9 79 5b e0 17 d2 ac 64 99");
+        /**
+         * Decompress it
+         */
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(compressedData);
+        InflaterInputStream inflaterInputStream = new InflaterInputStream(byteArrayInputStream);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        int i;
+        while(( i = inflaterInputStream.read()) != -1){
+            out.write(i);
+        }
+        inflaterInputStream.close();
+        out.close();
+        byteArrayInputStream.close();
+
+        System.out.println(new String(out.toByteArray()));
+
+        /**
+         * Convert it into a UTF-8 String
+         */
     }
 
 }
