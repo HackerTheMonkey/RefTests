@@ -1,7 +1,6 @@
 package org.techrefs.cryptography;
 
 import org.junit.Test;
-import org.techrefs.gson.cryptography.CryptoUtils;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;

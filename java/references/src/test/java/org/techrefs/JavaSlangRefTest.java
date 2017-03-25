@@ -16,7 +16,7 @@ public class JavaSlangRefTest {
          * This will have the effect of always returning a value regardless of what
          * happens, then we can locally decide what to do on what happens.
          */
-        Try<Integer> trialOfADivision = Try.of(() -> 500 / 0);
+        Try<Integer> trialOfADivision = Try.of(() -> 500 / 2);
 
         Integer computeOrDefault = trialOfADivision.getOrElse(-1);
 

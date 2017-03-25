@@ -1,4 +1,4 @@
-package org.techrefs.gson.cryptography;
+package org.techrefs.cryptography;
 
 import lombok.RequiredArgsConstructor;
 

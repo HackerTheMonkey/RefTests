@@ -1,9 +1,8 @@
 package org.techrefs.cryptography;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.techrefs.gson.cryptography.CryptoFactory;
 
-import static org.techrefs.gson.cryptography.CryptoUtils.toByteArray;
+import static org.techrefs.cryptography.CryptoUtils.toByteArray;
 
 public class CTRCipher {
 

@@ -9,8 +9,8 @@ import java.util.zip.InflaterInputStream;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.techrefs.gson.cryptography.CryptoUtils.toByteArray;
-import static org.techrefs.gson.cryptography.CryptoUtils.toHex;
+import static org.techrefs.cryptography.CryptoUtils.toByteArray;
+import static org.techrefs.cryptography.CryptoUtils.toHex;
 
 public class AESCTRTestVectorsTest {
 

@@ -13,7 +13,7 @@ import javax.transaction.SystemException;
 public class BitronixTest {
 
     @Test
-    public void doSomehting() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    public void doSomething() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
 
         System.out.println(TransactionManagerServices.getConfiguration().isWarnAboutZeroResourceTransaction());
 

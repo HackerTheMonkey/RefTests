@@ -5,20 +5,17 @@ import org.junit.Test;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.nio.ByteBuffer;
 import java.security.AlgorithmParameters;
 import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.techrefs.gson.cryptography.CryptoUtils.toHex;
+import static org.techrefs.cryptography.CryptoUtils.toHex;
 
 // It's too verbose and ugly code, cause I am still learning and like to type the API repeatedly
 // Clean code will make me right less, so not doing it while in learning mode.

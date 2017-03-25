@@ -29,7 +29,7 @@ import java.util.zip.InflaterInputStream;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.techrefs.gson.cryptography.CryptoUtils.*;
+import static org.techrefs.cryptography.CryptoUtils.*;
 
 /**
  * Original UIC protocol specs can be found here: https://goo.gl/MZNWAk
