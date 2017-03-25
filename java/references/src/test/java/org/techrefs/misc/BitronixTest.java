@@ -1,4 +1,4 @@
-package org.techrefs;
+package org.techrefs.misc;
 
 import bitronix.tm.BitronixTransactionManager;
 import bitronix.tm.TransactionManagerServices;

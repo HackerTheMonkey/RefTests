@@ -1,4 +1,4 @@
-package org.techrefs;
+package org.techrefs.misc;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

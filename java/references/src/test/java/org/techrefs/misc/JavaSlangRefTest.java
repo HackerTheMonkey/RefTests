@@ -1,4 +1,4 @@
-package org.techrefs;
+package org.techrefs.misc;
 
 import javaslang.control.Try;
 import org.junit.Test;

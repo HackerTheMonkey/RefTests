@@ -1,4 +1,4 @@
-package org.techrefs;
+package org.techrefs.misc;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;

@@ -1,4 +1,4 @@
-package org.techrefs;
+package org.techrefs.misc;
 
 import com.google.common.base.Charsets;
 import org.bouncycastle.util.io.pem.PemObject;
